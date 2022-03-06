@@ -8,6 +8,7 @@ import torch
 import numpy as np
 import torch.optim as optim
 from tqdm import tqdm
+import torch.nn as nn
 
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -58,22 +59,28 @@ def main():
     best_Model = 1.0
     tb = SummaryWriter()
 
-    code2id,id2code,name2id,id2name = one_hot_encoded()
+    code2id, id2code, name2id, id2name = one_hot_encoded()
 
     if not os.path.isdir(args.ModelSavePath):
         os.makedirs(args.ModelSavePath)
 
     print("Start Training")
 
-    for epoch in tqdm(range(args.epochs)):
-        for i, data in enumerate(train_loader):
+    for epoch in range(args.epochs):
+        for i, data in enumerate(tqdm(train_loader)):
             optimizer.zero_grad()
             inputs, labels = data
-            labels = [rgb_to_onehot(labels[X,:,:,:], id2code) for X in range(labels.shape[0])]
-            labels = torch.squeeze(torch.tensor(np.array(labels),dtype=torch.long),dim=1)
-            inputs, labels = Variable(inputs.cuda()), Variable(torch.max(labels,1)[1].cuda())
+            labels = [
+                rgb_to_onehot(labels[X, :, :, :], id2code)
+                for X in range(labels.shape[0])
+            ]
+            labels = torch.from_numpy(np.asarray(labels))
+            true_labels = labels.cuda()
+            inputs, labels = Variable(inputs.cuda()), Variable(
+                torch.argmax(labels, -1).cuda()
+            )
             outputs = Model(inputs)
-            print(outputs.shape)
+            preds = torch.softmax(outputs, dim=1)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -82,39 +89,52 @@ def main():
                     "Epoch: [%d/%d], Step: [%d/%d], Loss: %.4f"
                     % (epoch + 1, args.epochs, i + 1, len(train_loader), loss.item())
                 )
+                tb.add_scalar(
+                    "train_loss_iter", loss.item(), epoch * len(train_loader) + i
+                )
+                tb.add_figure(
+                    "predictions vs. actuals",
+                    plot_net_predictions(inputs, true_labels, preds, args.batch_size,id2code),
+                    global_step=i + len(train_loader) * epoch,
+                )
 
-        if (epoch + 1) % 10 == 0:
-            Model.eval()
-            val_loss = 0.0
-            val_dice = 0.0
+        with torch.no_grad():
+            if (epoch + 1) % 10 == 0:
+                Model.eval()
+                val_loss = 0.0
+                val_dice = 0.0
 
-            for i, data in enumerate(val_loader):
-                inputs, labels = data
-                labels = [rgb_to_onehot(labels[X,:,:,:], id2code) for X in range(labels.shape[0])]
-                labels = torch.squeeze(torch.tensor(np.array(labels),dtype=torch.long),dim=1)
-                inputs, labels = Variable(inputs.cuda()), Variable(torch.max(labels,1)[1].cuda())
-                outputs = Model(inputs)
-                val_loss += criterion(outputs, labels).item()
-                val_dice += dice_score(outputs, labels)
-            val_loss /= len(val_loader)
-            val_dice /= len(val_loader)
+                for i, data in enumerate(val_loader):
+                    inputs, labels = data
+                    labels = [
+                        rgb_to_onehot(labels[X, :, :, :], id2code)
+                        for X in range(labels.shape[0])
+                    ]
+                    labels = torch.from_numpy(np.asarray(labels))
+                    inputs, labels = Variable(inputs.cuda()), Variable(
+                        torch.argmax(labels, -1).cuda()
+                    )
+                    outputs = Model(inputs)
+                    val_loss += criterion(outputs, labels).item()
+                val_loss /= len(val_loader)
 
-            with open("VAL_LOGS.txt", "a+") as f:
-                f.write("epoch: %s," % str(epoch + 1))
-                f.write("val_dice: %s\n" % str(val_dice))
-               
+                with open("VAL_LOGS.txt", "a+") as f:
+                    f.write("epoch: %s," % str(epoch + 1))
+                    f.write("val_dice: %s\n" % str(val_dice))
 
-            print("Validation Dice: %.4f, Validation Loss" % (val_dice, val_loss))
+                print("Validation Dice: %.4f, Validation Loss" % (val_dice, val_loss))
 
-            tb.add_scalar("Validation Dice", val_dice, epoch)
-            tb.add_scalar("Validation Loss", val_loss, epoch)
-            Model.train()
-            if val_loss < best_Model:
-                best_Model = val_loss
-                torch.save(Model.state_dict(), args.ModelSavePath + "best_Model.pkl")
-                print("Saving best Model")
+                tb.add_scalar("Validation Dice", val_dice, epoch)
+                tb.add_scalar("Validation Loss", val_loss, epoch)
+                Model.train()
+                if val_loss < best_Model:
+                    best_Model = val_loss
+                    torch.save(
+                        Model.state_dict(), args.ModelSavePath + "best_Model.pkl"
+                    )
+                    print("Saving best Model")
 
-        scheduler.step(val_loss)
+                scheduler.step(val_loss)
 
 
 if __name__ == "__main__":

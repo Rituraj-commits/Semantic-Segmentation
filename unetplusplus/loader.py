@@ -2,7 +2,6 @@ import numpy as np
 import os
 import cv2
 from torch.utils.data import Dataset, DataLoader
-import matplotlib.pyplot as plt
 
 class GTAVDataset(Dataset):
     def __init__(self, mode, classes=1, dataset_path="./"):
@@ -25,10 +24,7 @@ class GTAVDataset(Dataset):
             self.dataset_path + self.mode + "/labels/" + filename[idx]
         )
         label = cv2.cvtColor(label, cv2.COLOR_BGR2RGB)
-        label = cv2.resize(label, (224, 224))
-        
+        label = cv2.resize(label, (224, 224))    
         label = label / 255.0
-        label = label.astype(np.float32)
-
         return img, label
 

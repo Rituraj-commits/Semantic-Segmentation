@@ -1,81 +1,42 @@
-import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 import scipy.io
+import torch
 
-class DiceLoss(nn.Module):
-    def __init__(self, weight=None, size_average=True):
-        super(DiceLoss, self).__init__()
-
-    def forward(self, inputs, targets, smooth=1):
-
-        inputs = inputs.view(-1)
-        targets = targets.view(-1)
-
-        intersection = (inputs * targets).sum()
-        dice = (2.0 * intersection + smooth) / (inputs.sum() + targets.sum() + smooth)
-
-        return 1 - dice
-
-def iou_score(predictions, labels):
-    predictions = nn.Softmax(dim=1)(predictions)
-    pred = predictions.data.cpu().numpy()
-    ious = []
-    pred[pred <= 0.5] = 0
-    pred[pred > 0.5] = 1
-    testlabel = labels.numpy()[0][0].astype(bool)
-    pred = pred.astype(bool)
-    # Compute IOU
-    overlap = testlabel * pred
-    union = testlabel + pred
-    iou = overlap.sum() / float(union.sum())
-    ious.append(iou)
-    return ious
-
-def dice_score(predictions,labels):
-    predictions = nn.Softmax(dim=1)(predictions)
-    pred = predictions.data.cpu().numpy()
-    dices = []
-    pred[pred <= 0.5] = 0
-    pred[pred > 0.5] = 1
-    target = labels.numpy()[0][0].astype(bool)
-    numerator = 2 * np.sum(pred * target)
-    denominator = np.sum(pred + target)
-    dice = (numerator + 1) / (denominator + 1)
-    dices.append(dice)
-    return dices
-
-
-def rgb_to_onehot(rgb_image, colormap):
-    '''Function to one hot encode RGB mask labels
-        Inputs: 
-            rgb_image - image matrix (eg. 256 x 256 x 3 dimension numpy ndarray)
-            colormap - dictionary of color to label id
-        Output: One hot encoded image of dimensions (height x width x num_classes) where num_classes = len(colormap)
-    '''
-    num_classes = len(colormap)
-    shape = rgb_image.shape[:2]+(num_classes,)
-    encoded_image = np.zeros( shape, dtype=np.int8 )
-    rgb_image = np.expand_dims(rgb_image, axis=0)
-    for i, cls in enumerate(colormap):
-        encoded_image[:,:,i] = np.all(rgb_image.reshape( (-1,3) ) == colormap[i], axis=1).reshape(shape[:2])
-    encoded_image = encoded_image.transpose(2,0,1)
-    return encoded_image
-
+import matplotlib.pyplot as plt
 
 def onehot_to_rgb(onehot, colormap):
-    '''Function to decode encoded mask labels
-        Inputs: 
-            onehot - one hot encoded image matrix (height x width x num_classes)
-            colormap - dictionary of color to label id
-        Output: Decoded RGB image (height x width x 3) 
-    '''
+    """Function to decode encoded mask labels
+    Inputs:
+        onehot - one hot encoded image matrix (height x width x num_classes)
+        colormap - dictionary of color to label id
+    Output: Decoded RGB image (height x width x 3)
+    """
     single_layer = np.argmax(onehot, axis=-1)
-    output = np.zeros( onehot.shape[:2]+(3,) )
+    output = np.zeros(onehot.shape[:2] + (3,))
     for k in colormap.keys():
-        output[single_layer==k] = colormap[k]
-    return np.uint8(output)
+        output[single_layer == k] = colormap[k]
+    return output
+
+
+def rgb_to_onehot(rgb, colormap):
+    """Function to one hot encode RGB mask labels
+    Inputs:
+        rgb - RGB mask (height x width x 3)
+        colormap - dictionary of color to label id
+    Output: Encoded one hot vector (height x width x num_classes)
+    """
+
+    rgb = rgb.numpy()
+    mask = np.zeros((rgb.shape[0], rgb.shape[1]))
+    for k, v in colormap.items():
+        mask[np.all(rgb == v, axis=2)] = k
+    mask = F.one_hot(torch.from_numpy(mask).long(), num_classes=len(colormap)).numpy()
+    return mask
+
 
 def one_hot_encoded():
+    """Function to create colormaps for one hot encoding"""
 
     mapping = scipy.io.loadmat("/media/ri2raj/External HDD/gta5_new/train/mapping.mat")
 
@@ -99,4 +60,22 @@ def one_hot_encoded():
     name2id = {v: k for k, v in enumerate(label_names)}
     id2name = {k: v for k, v in enumerate(label_names)}
 
-    return code2id,id2code,name2id,id2name
+    return code2id, id2code, name2id, id2name
+
+def plot_net_predictions(imgs, true_masks, masks_pred, batch_size, colormap):
+    
+    fig, ax = plt.subplots(3, batch_size, figsize=(20, 15))
+    
+    for i in range(batch_size):
+        
+        img  = np.transpose(imgs[i].squeeze().cpu().detach().numpy(), (1,2,0))
+        mask_pred = masks_pred[i].cpu().detach().numpy()
+        mask_true = true_masks[i].cpu().detach().numpy()
+    
+        ax[0,i].imshow(img)
+        ax[1,i].imshow(onehot_to_rgb(mask_pred,colormap))
+        ax[1,i].set_title('Predicted')
+        ax[2,i].imshow(onehot_to_rgb(mask_true,colormap))
+        ax[2,i].set_title('Ground truth')
+        
+    return fig
