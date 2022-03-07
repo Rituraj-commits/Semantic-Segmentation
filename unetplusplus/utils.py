@@ -70,6 +70,7 @@ def plot_net_predictions(imgs, true_masks, masks_pred, batch_size, colormap):
         
         img  = np.transpose(imgs[i].squeeze().cpu().detach().numpy(), (1,2,0))
         mask_pred = masks_pred[i].cpu().detach().numpy()
+        mask_pred = mask_pred.transpose(1,2,0)
         mask_true = true_masks[i].cpu().detach().numpy()
     
         ax[0,i].imshow(img)
@@ -79,3 +80,39 @@ def plot_net_predictions(imgs, true_masks, masks_pred, batch_size, colormap):
         ax[2,i].set_title('Ground truth')
         
     return fig
+
+def dice_score(pred, true, smooth=1e-7):
+    """Function to calculate dice score
+    Inputs:
+        pred - predicted mask
+        true - true mask
+        smooth - smoothing factor (default 1e-7)
+    Output: Dice score
+    """
+
+    pred = pred.cpu().detach().numpy()
+    true = true.cpu().detach().numpy()
+    pred = pred.transpose(0,2,3,1)
+    pred[pred<=0.5] = 0
+    pred[pred>0.5] = 1
+    intersection = np.sum(pred * true)
+    union = np.sum(pred) + np.sum(true)
+    return (2. * intersection + smooth) / (union + smooth)
+
+def iou_score(pred, true, smooth=1e-7):
+    """Function to calculate IoU score
+    Inputs:
+        pred - predicted mask
+        true - true mask
+        smooth - smoothing factor (default 1e-7)
+    Output: IoU score
+    """
+
+    pred = pred.cpu().detach().numpy()
+    true = true.cpu().detach().numpy()
+    pred = pred.transpose(0,2,3,1)
+    pred[pred<=0.5] = 0
+    pred[pred>0.5] = 1
+    intersection = np.sum(pred * true)
+    union = np.sum(pred) + np.sum(true)
+    return (intersection + smooth) / (union + smooth)
