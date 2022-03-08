@@ -9,6 +9,7 @@ import numpy as np
 import torch.optim as optim
 from tqdm import tqdm
 import torch.nn as nn
+from torch.utils.data import DataLoader
 
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -76,13 +77,12 @@ def main():
             ]
             labels = torch.from_numpy(np.asarray(labels))
             true_labels = labels.cuda()
-            
+
             inputs, labels = Variable(inputs.cuda()), Variable(
                 torch.argmax(labels, -1).cuda()
             )
             outputs = Model(inputs)
             preds = torch.softmax(outputs, dim=1)
-            print(true_labels.shape, preds.shape)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -96,14 +96,14 @@ def main():
                 )
                 tb.add_figure(
                     "predictions vs. actuals",
-                    plot_net_predictions(inputs, true_labels, preds, args.batch_size,id2code),
+                    plot_net_predictions(
+                        inputs, true_labels, preds, args.batch_size, id2code
+                    ),
                     global_step=i + len(train_loader) * epoch,
                 )
-            
-            
 
         with torch.no_grad():
-            
+
             Model.eval()
             val_loss = 0.0
             val_dice = 0.0
@@ -126,7 +126,10 @@ def main():
             val_dice /= len(val_loader)
             val_iou /= len(val_loader)
 
-            print("Validation Dice: %.4f, Validation Loss: %.4f, Validation IoU: %.4f" % (val_dice, val_loss, val_iou))
+            print(
+                "Validation Dice: %.4f, Validation Loss: %.4f, Validation IoU: %.4f"
+                % (val_dice, val_loss, val_iou)
+            )
 
             tb.add_scalar("Validation Dice", val_dice, epoch)
             tb.add_scalar("Validation Loss", val_loss, epoch)
@@ -134,9 +137,7 @@ def main():
             Model.train()
             if val_loss < best_Model:
                 best_Model = val_loss
-                torch.save(
-                    Model.state_dict(), args.ModelSavePath + "best_Model.pkl"
-                )
+                torch.save(Model.state_dict(), args.ModelSavePath + "best_Model.pkl")
                 print("Saving best Model")
 
             scheduler.step(val_loss)

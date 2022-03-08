@@ -38,7 +38,7 @@ def rgb_to_onehot(rgb, colormap):
 def one_hot_encoded():
     """Function to create colormaps for one hot encoding"""
 
-    mapping = scipy.io.loadmat("/media/ri2raj/External HDD/gta5_new/train/mapping.mat")
+    mapping = scipy.io.loadmat("gta5_new/train/mapping.mat")
 
     label_names = []
     label_codes = []
@@ -114,5 +114,5 @@ def iou_score(pred, true, smooth=1e-7):
     pred[pred<=0.5] = 0
     pred[pred>0.5] = 1
     intersection = np.sum(pred * true)
-    union = np.sum(pred) + np.sum(true)
+    union = np.sum(pred) + np.sum(true) - intersection
     return (intersection + smooth) / (union + smooth)

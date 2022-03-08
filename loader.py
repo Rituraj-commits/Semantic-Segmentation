@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import cv2
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 class GTAVDataset(Dataset):
     def __init__(self, mode, classes=1, dataset_path="./"):
