@@ -47,7 +47,7 @@ We evaluate the model on the basis of Dice Score Coefficient(DSC) and Intersecti
   <img src="https://github.com/Rituraj-commits/Semantic-Segmentation/blob/main/resources/Results.png">
   <br>
   <br>
-  <em align="center"></em>
+  <em align="center">Fig 1: Semantic Segmentation on GTAV dataset </em>
   <br>
 </div>
 
