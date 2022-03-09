@@ -33,7 +33,7 @@ pip install segmentation_models_pytorch
   <img src="https://github.com/Rituraj-commits/Semantic-Segmentation/blob/main/resources/Results.png">
   <br>
   <br>
-  <em align="center">Fig 1: Evaluated Results  </em>
+  <em align="center"></em>
   <br>
 </div>
 
