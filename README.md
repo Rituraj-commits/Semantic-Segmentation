@@ -40,7 +40,7 @@ We use Cross Entropy as the objective function to train the model.
 </div>
 
 #### Training
-We use Adam optimizer for optimizing the objective function. The learning rate is initially set to 0.001 and is halved if the validation loss plateaus for 10 epochs. We train the network until 100 epochs and the best weights are saved accordingly. We use NVIDIA Tesla P100 with 16 GB of VRAM to train the model.
+We use Adam optimizer for optimizing the objective function. The learning rate is initially set to 0.001 and is halved if the validation loss plateaus over 10 epochs. We train the network until 100 epochs and the best weights are saved accordingly. We use NVIDIA Tesla P100 with 16 GB of VRAM to train the model.
 
 ### Quantative Results
 We evaluate the model on the basis of Dice Score Coefficient(DSC) and Intersection over Union(IoU) over 35 classes.
