@@ -28,6 +28,16 @@ pip install segmentation_models_pytorch
 
 ```utils.py``` contains utility functions.
 
+### Quantative Results
+We evaluate the model on the basis of Dice Score Coefficient(DSC) and Intersection over Union(IoU) over 35 classes.
+<div align="center">
+  <img src="https://github.com/Rituraj-commits/Semantic-Segmentation/blob/main/resources/table.png">
+  <br>
+  <br>
+  <em align="center"></em>
+  <br>
+</div>
+
 ### Qualitative Results
 <div align="center">
   <img src="https://github.com/Rituraj-commits/Semantic-Segmentation/blob/main/resources/Results.png">
