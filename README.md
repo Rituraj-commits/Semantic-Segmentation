@@ -28,7 +28,14 @@ pip install segmentation_models_pytorch
 
 ```utils.py``` contains utility functions.
 
-
+### Qualitative Results
+<div align="center">
+  <img src="https://github.com/Rituraj-commits/Semantic-Segmentation/blob/main/resources/Results.png">
+  <br>
+  <br>
+  <em align="center">Fig 1: Evaluated Results  </em>
+  <br>
+</div>
 
 ## Acknowledgments
 
