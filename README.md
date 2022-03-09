@@ -28,6 +28,16 @@ pip install segmentation_models_pytorch
 
 ```utils.py``` contains utility functions.
 
+### Experimental Details
+#### Loss functions
+We use Cross Entropy as the objective function to train the model.
+<div align="center">
+  <img src="https://github.com/Rituraj-commits/Semantic-Segmentation/blob/main/resources/CE.png">
+  <br>
+  <br>
+  <em align="center"></em>
+  <br>
+</div>
 
 #### Training
 We use Adam optimizer for optimizing the objective function. The learning rate is initially set to 0.001 and is halved if the validation loss plateaus for 10 epochs. We train the network until 100 epochs and the best weights are saved accordingly. We use NVIDIA Tesla P100 with 16 GB of VRAM to train the model.
