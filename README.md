@@ -9,7 +9,6 @@ The GTAV dataset consists of 24966 synthetic images with dense pixel level seman
 * PyTorch 1.8.0
 * CUDA 10.2
 * TensorBoard 2.5.0
-* 
 
 ### Installing
 
