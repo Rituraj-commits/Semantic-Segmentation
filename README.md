@@ -1,62 +1,38 @@
 # Semantic Segmentation on GTAV-to-Cityscapes Labels
 
-The GTAV dataset consists of 24966 synthetic images with dense pixel level semantic annotations. The images have been rendered using the open-world video game Grand Theft Auto 5 and are all from the car perspective in the streets of American-style virtual cities. There are 35 semantic classes which are compatible with the ones of CamVid and Cityscapes dataset.
-
-## Description
-
-An in-depth paragraph about your project and overview of use.
+The GTAV dataset consists of 24966 synthetic images with dense pixel level semantic annotations. The images have been rendered using the open-world video game Grand Theft Auto 5 and are all from the car perspective in the streets of American-style virtual cities. There are 35 semantic classes which are compatible with the ones of CamVid and Cityscapes dataset. We use Unet++ as our baseline in this scenario. UNet++ is an extension over UNet which uses dense skip connections to extract better feature information. 
 
 ## Getting Started
 
 ### Dependencies
 
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
+* PyTorch 1.8.0
+* CUDA 10.2
+* TensorBoard 2.5.0
+* 
 
 ### Installing
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
-
-### Executing program
-
-* How to run the program
-* Step-by-step bullets
 ```
-code blocks for commands
+pip install segmentation_models_pytorch
 ```
 
-## Help
+### Execution
 
-Any advise for common problems or issues.
+
 ```
-command to run if program contains helper info
+ python train.py
 ```
+```train.py``` contains code for training the model and saving the weights.
 
-## Authors
+```loader.py``` contains code for dataloading and train-test split.
 
-Contributors names and contact info
+```utils.py``` contains utility functions.
 
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
 
-## Version History
-
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
-
-## License
-
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
 
 ## Acknowledgments
 
-Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
-* [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-* [dbader](https://github.com/dbader/readme-template)
-* [zenorocha](https://gist.github.com/zenorocha/4526327)
-* [fvcproductions](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
+[1] [Aerial Segmentation using UNet](https://www.kaggle.com/ayushdabra/inceptionresnetv2-unet-81-dice-coeff-86-acc)
+
+[2] [UNet Multi Class PyTorch](https://github.com/France1/unet-multiclass-pytorch)
